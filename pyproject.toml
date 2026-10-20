@@ -1,2 +1,27 @@
+
+[project]
+name = "coinvault"
+version = "1.0.0"
+description = "Premium eFootball Coin Tracking and Esports Wealth Intelligence Terminal"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask==3.1.3",
+    "Flask-SQLAlchemy==3.1.1",
+    "Flask-Migrate==4.1.0",
+    "Flask-Login==0.6.3",
+    "Flask-WTF==1.3.0",
+    "Flask-Limiter==4.1.1",
+    "Flask-SocketIO==5.7.0",
+    "email-validator==2.3.0",
+    "python-dotenv==1.2.4",
+    "Pillow==13.0.0",
+    "APScheduler==3.11.3",
+    "python-dateutil==2.9.0.post0",
+    "argon2-cffi==25.1.0",
+    "simple-websocket==1.1.0",
+    "gunicorn>=23.0.0; sys_platform != 'win32'",
+    "psycopg2-binary>=2.9.9; sys_platform != 'win32'",
+]
+
 [tool.vercel]
 entrypoint = "run:app"
