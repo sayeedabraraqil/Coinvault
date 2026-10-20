@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Terminal Overseer — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Header & Actions -->
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div>
+      <div class="text-xs font-semibold text-brand-gold uppercase tracking-wider">Administrative Governance & Integrity</div>
+      <h1 class="font-display font-extrabold text-3xl text-txt-primary">Overseer Command Console</h1>
+      <p class="text-xs text-txt-secondary mt-1">Review flagged statistical anomalies, moderate user accounts, and inspect platform audit logs.</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('admin.export_csv') }}" class="px-4 py-2 rounded-xl bg-pitch-elevated hover:bg-pitch-card border border-borderUi-strong text-brand-gold font-bold text-xs flex items-center gap-2 shadow-glow-gold transition-colors">
+        <span>📥 Export All Snapshots (CSV)</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle">
+      <div class="text-xs text-txt-muted uppercase font-semibold">Total Accounts</div>
+      <div class="font-display font-bold text-2xl text-txt-primary mono mt-1">{{ total_users }}</div>
+    </div>
+    <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle">
+      <div class="text-xs text-txt-muted uppercase font-semibold">Total Recorded Snapshots</div>
+      <div class="font-display font-bold text-2xl text-brand-gold mono mt-1">{{ total_entries }}</div>
+    </div>
+    <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle {% if flagged_count > 0 %}border-brand-crimson/40 bg-brand-crimson/5{% endif %}">
+      <div class="text-xs text-txt-muted uppercase font-semibold">Flagged Anomalies Awaiting Review</div>
+      <div class="font-display font-bold text-2xl {% if flagged_count > 0 %}text-brand-crimson{% else %}text-brand-turf{% endif %} mono mt-1">
+        {{ flagged_count }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Flagged Entries Moderation Queue -->
+  <div class="glass-panel rounded-3xl border-borderUi-strong overflow-hidden">
+    <div class="p-6 border-b border-borderUi-subtle flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-brand-crimson">⚠️</span>
+        <h2 class="font-display font-bold text-lg text-txt-primary">Anomaly Review Queue (Anti-Cheat Outliers)</h2>
+      </div>
+      <span class="text-xs mono text-txt-muted">{{ flagged_entries|length }} Items</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-borderUi-subtle bg-pitch-elevated/40 text-txt-muted uppercase font-semibold">
+            <th class="py-3 px-4">Entry #</th>
+            <th class="py-3 px-4">User</th>
+            <th class="py-3 px-4">Reported Amount</th>
+            <th class="py-3 px-4">Source</th>
+            <th class="py-3 px-4">Outlier Reason</th>
+            <th class="py-3 px-4">Logged Time</th>
+            <th class="py-3 px-4 text-right">Moderation Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-borderUi-subtle">
+          {% for entry in flagged_entries %}
+          <tr class="hover:bg-pitch-elevated/30 transition-colors bg-brand-crimson/5">
+            <td class="py-3.5 px-4 mono text-txt-muted">#{{ entry.id }}</td>
+            <td class="py-3.5 px-4">
+              <a href="{{ url_for('user.profile', username=entry.user.username) }}" class="font-bold text-txt-primary hover:text-brand-gold">
+                @{{ entry.user.username }}
+              </a>
+            </td>
+            <td class="py-3.5 px-4 mono font-bold text-brand-gold text-sm">{{ entry.amount }}</td>
+            <td class="py-3.5 px-4 mono text-txt-secondary">{{ entry.source }}</td>
+            <td class="py-3.5 px-4 text-brand-crimson font-medium max-w-sm">{{ entry.flag_reason }}</td>
+            <td class="py-3.5 px-4 mono text-txt-muted">{{ entry.logged_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
+              <form action="{{ url_for('admin.approve_entry', entry_id=entry.id) }}" method="POST" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="px-2.5 py-1 rounded bg-brand-turf/20 text-brand-turf font-bold hover:bg-brand-turf/30">
+                  Approve
+                </button>
+              </form>
+              <form action="{{ url_for('admin.delete_entry', entry_id=entry.id) }}" method="POST" class="inline" onsubmit="return confirm('Purge this fraudulent snapshot?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="px-2.5 py-1 rounded bg-brand-crimson/20 text-brand-crimson font-bold hover:bg-brand-crimson/30">
+                  Purge
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="py-8 text-center text-brand-turf">
+              ✓ All clear! Zero statistical anomalies awaiting moderation review.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- User Management Table -->
+  <div class="glass-panel rounded-3xl border-borderUi-subtle overflow-hidden">
+    <div class="p-6 border-b border-borderUi-subtle flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-txt-primary">User Vault Directory</h2>
+      <span class="text-xs mono text-txt-muted">{{ recent_users|length }} Accounts</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-borderUi-subtle bg-pitch-elevated/40 text-txt-muted uppercase font-semibold">
+            <th class="py-3 px-4">User</th>
+            <th class="py-3 px-4">Email</th>
+            <th class="py-3 px-4">Current Balance</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4">Joined</th>
+            <th class="py-3 px-4 text-right">Administrative Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-borderUi-subtle">
+          {% for u in recent_users %}
+          <tr class="hover:bg-pitch-elevated/30 transition-colors">
+            <td class="py-3.5 px-4 flex items-center gap-2">
+              <img src="{{ u.avatar_url }}" class="w-6 h-6 rounded-full object-cover" />
+              <div>
+                <a href="{{ url_for('user.profile', username=u.username) }}" class="font-semibold text-txt-primary hover:text-brand-gold">
+                  {{ u.effective_name }}
+                </a>
+                <span class="text-[10px] text-txt-muted mono block">@{{ u.username }}</span>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 text-txt-secondary mono">{{ u.email }}</td>
+            <td class="py-3.5 px-4 mono font-bold text-brand-gold">{{ u.current_balance }}</td>
+            <td class="py-3.5 px-4">
+              {% if u.is_banned %}
+              <span class="px-2 py-0.5 rounded bg-brand-crimson/20 text-brand-crimson mono font-bold">BANNED</span>
+              {% elif u.is_admin %}
+              <span class="px-2 py-0.5 rounded bg-brand-gold/20 text-brand-gold mono font-bold">ADMIN</span>
+              {% else %}
+              <span class="px-2 py-0.5 rounded bg-brand-turf/20 text-brand-turf mono">ACTIVE</span>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 mono text-txt-muted">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+            <td class="py-3.5 px-4 text-right">
+              {% if not u.is_admin %}
+              <form action="{{ url_for('admin.toggle_ban', user_id=u.id) }}" method="POST" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="px-2.5 py-1 rounded text-[11px] font-bold transition-colors {% if u.is_banned %}bg-brand-turf/20 text-brand-turf hover:bg-brand-turf/30{% else %}bg-brand-crimson/15 text-brand-crimson hover:bg-brand-crimson/25{% endif %}">
+                  {% if u.is_banned %}Unban User{% else %}Ban User{% endif %}
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Platform Audit Log -->
+  <div class="glass-panel rounded-3xl border-borderUi-subtle overflow-hidden">
+    <div class="p-6 border-b border-borderUi-subtle flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-txt-primary">Compliance Audit Trail</h2>
+      <span class="text-xs mono text-txt-muted">LATEST 25 ACTIONS</span>
+    </div>
+    <div class="divide-y divide-borderUi-subtle text-xs mono">
+      {% for a in recent_audits %}
+      <div class="p-3.5 flex items-center justify-between hover:bg-pitch-elevated/30">
+        <div class="flex items-center gap-3">
+          <span class="text-txt-muted text-[11px]">{{ a.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+          <span class="font-bold text-brand-gold">{{ a.action }}</span>
+          <span class="text-txt-secondary font-sans text-xs">on {{ a.entity_type }} #{{ a.entity_id or '—' }}</span>
+        </div>
+        <div class="text-txt-muted text-[11px]">
+          Actor: @{{ a.user.username if a.user else 'System' }} • IP: {{ a.ip_address or '127.0.0.1' }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

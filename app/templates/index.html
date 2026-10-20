@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}COINVAULT — The eFootball Wealth & Rank Terminal{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+  <!-- ============================================================== -->
+  <!-- HERO SECTION -->
+  <!-- ============================================================== -->
+  <section class="relative pt-6 pb-12 overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Left Column: Copy & Triggers -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-panel border-borderUi-strong text-xs text-txt-secondary">
+          <span class="w-2 h-2 rounded-full bg-brand-turf animate-ping"></span>
+          <span class="font-medium">eFootball 2026 Competitive Season Active</span>
+          <span class="text-txt-muted">•</span>
+          <span class="text-brand-gold mono">v1.0.0</span>
+        </div>
+
+        <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight text-txt-primary leading-[1.08] gsap-hero-title">
+          The Sovereign <br/>
+          <span class="text-gold-gradient">eFootball Coin</span> <br/>
+          Reserve Terminal.
+        </h1>
+
+        <p class="text-txt-secondary text-base sm:text-lg max-w-xl leading-relaxed">
+          Track every coin with immutable balance snapshots, verify your count through our companion userscript, and duel with division rivals on live market leaderboards.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('user.dashboard') }}" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-goldDark text-pitch-void font-bold text-sm shadow-glow-gold hover:opacity-95 active:scale-95 transition-all flex items-center gap-2">
+            <span>Enter Your Vault</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <button onclick="window.COINVAULT.openLogModal()" class="px-5 py-3.5 rounded-xl glass-panel glass-panel-hover text-txt-primary font-semibold text-sm transition-all flex items-center gap-2">
+            <span class="text-brand-gold">⚡</span>
+            <span>Fast Log Balance</span>
+          </button>
+          {% else %}
+          <a href="{{ url_for('auth.register') }}" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-goldDark text-pitch-void font-bold text-sm shadow-glow-gold hover:opacity-95 active:scale-95 transition-all flex items-center gap-2">
+            <span>Open Free Terminal Account</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <a href="{{ url_for('main.leaderboards') }}" class="px-5 py-3.5 rounded-xl glass-panel glass-panel-hover text-txt-primary font-semibold text-sm transition-all">
+            Inspect Leaderboards
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Global Macro Stat Strip -->
+        <div class="pt-6 border-t border-borderUi-subtle grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <div class="text-[11px] text-txt-muted uppercase tracking-wider font-semibold">Coins Tracked</div>
+            <div class="font-display font-extrabold text-2xl text-brand-gold mono mt-0.5">
+              <span data-counter="{{ market.total_coins }}">{{ market.total_coins }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[11px] text-txt-muted uppercase tracking-wider font-semibold">Active Vaults</div>
+            <div class="font-display font-extrabold text-2xl text-txt-primary mono mt-0.5">
+              <span data-counter="{{ market.active_count }}">{{ market.active_count }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[11px] text-txt-muted uppercase tracking-wider font-semibold">Median Balance</div>
+            <div class="font-display font-extrabold text-2xl text-txt-primary mono mt-0.5">
+              <span data-counter="{{ market.median_balance }}">{{ market.median_balance }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[11px] text-txt-muted uppercase tracking-wider font-semibold">24h Gainers</div>
+            <div class="font-display font-extrabold text-2xl text-brand-turf mono mt-0.5 flex items-center gap-1">
+              <span>+{{ market.gainers }}</span>
+              <span class="text-xs text-txt-muted">/ -{{ market.losers }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Interactive 3D Coin WebGL Element -->
+      <div class="lg:col-span-5 flex justify-center relative">
+        <div class="w-full max-w-sm aspect-square relative flex items-center justify-center">
+          
+          <!-- WebGL Canvas Mount -->
+          <div id="webgl-coin-hero" class="w-full h-full cursor-grab active:cursor-grabbing z-10"></div>
+          
+          <!-- Graceful Fallback SVG if WebGL unavailable or reduced-motion -->
+          <div id="webgl-coin-fallback" class="hidden absolute inset-0 z-0 flex items-center justify-center">
+            <div class="w-48 h-48 rounded-full bg-gradient-to-tr from-brand-goldDark via-brand-gold to-brand-goldLight p-1 shadow-glow-gold flex items-center justify-center">
+              <div class="w-full h-full rounded-full bg-pitch-void border-4 border-brand-gold flex flex-col items-center justify-center">
+                <span class="text-4xl text-brand-gold">★</span>
+                <span class="font-display font-extrabold text-lg text-brand-gold">eFootball</span>
+                <span class="text-[10px] text-txt-muted mono">COIN TOKEN</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ambient Halo Ring -->
+          <div class="absolute inset-0 rounded-full bg-brand-gold/10 blur-3xl pointer-events-none -z-10"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================== -->
+  <!-- TOP 3 WEALTH PODIUM SECTION (3D TILT CARDS) -->
+  <!-- ============================================================== -->
+  <section class="space-y-6">
+    <div class="flex items-end justify-between">
+      <div>
+        <div class="text-xs font-semibold text-brand-gold uppercase tracking-wider">High Stakes Division</div>
+        <h2 class="font-display font-bold text-2xl text-txt-primary">Global Wealth Podium</h2>
+      </div>
+      <a href="{{ url_for('main.leaderboards') }}" class="text-xs text-brand-gold hover:underline flex items-center gap-1">
+        <span>View Full 100 Leaderboard</span>
+        <span>→</span>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for user_obj, balance in podium %}
+      {% set rank_num = loop.index %}
+      <div class="tilt-card glass-panel rounded-2xl p-6 relative overflow-hidden transition-all duration-300 gsap-fade-up
+        {% if rank_num == 1 %} border-brand-gold/50 shadow-glow-gold bg-gradient-to-b from-brand-gold/10 to-transparent
+        {% elif rank_num == 2 %} border-slate-300/40 shadow-terminal
+        {% else %} border-amber-700/40 shadow-terminal {% endif %}">
+        
+        <!-- Rank Badge Ribbon -->
+        <div class="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mono
+          {% if rank_num == 1 %} bg-brand-gold text-pitch-void shadow-glow-gold
+          {% elif rank_num == 2 %} bg-slate-200 text-slate-900
+          {% else %} bg-amber-700 text-amber-100 {% endif %}">
+          <span>RANK #{{ rank_num }}</span>
+        </div>
+
+        <div class="flex items-center gap-4 mb-4">
+          <img src="{{ user_obj.avatar_url }}" alt="{{ user_obj.username }}" class="w-14 h-14 rounded-full border-2 object-cover
+            {% if rank_num == 1 %} border-brand-gold {% elif rank_num == 2 %} border-slate-300 {% else %} border-amber-700 {% endif %}" />
+          <div>
+            <h3 class="font-display font-bold text-lg text-txt-primary truncate max-w-[160px]">{{ user_obj.effective_name }}</h3>
+            <div class="text-xs text-txt-muted mono">@{{ user_obj.username }}</div>
+          </div>
+        </div>
+
+        <div class="space-y-1 mb-5">
+          <div class="text-[11px] text-txt-muted uppercase tracking-wider font-semibold">Vault Balance</div>
+          <div class="font-display font-extrabold text-3xl text-brand-gold mono">
+            {{ balance | format_number if balance is defined else balance }} <span class="text-xs text-txt-muted font-normal">coins</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-borderUi-subtle text-xs">
+          <span class="text-txt-muted">{{ user_obj.country }} Squad</span>
+          <a href="{{ url_for('user.profile', username=user_obj.username) }}" class="font-semibold text-txt-primary hover:text-brand-gold transition-colors">
+            Profile Dossier →
+          </a>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+
+  <!-- ============================================================== -->
+  <!-- REAL-TIME ACTIVITY STREAM & PLATFORM PILLARS -->
+  <!-- ============================================================== -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Real-time Live Activity Stream -->
+    <div class="lg:col-span-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-brand-turf animate-pulse shadow-glow-turf"></span>
+          <h3 class="font-display font-bold text-lg text-txt-primary">Live Transaction Stream</h3>
+        </div>
+        <span class="text-xs text-txt-muted mono">SOCKET.IO LIVE</span>
+      </div>
+
+      <div id="live-activity-stream" class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+        {% for entry in recent_entries %}
+        <div class="glass-panel p-3 rounded-xl flex items-center justify-between text-xs hover:border-borderUi-strong transition-all">
+          <div class="flex items-center gap-2.5">
+            <img src="{{ entry.user.avatar_url }}" class="w-7 h-7 rounded-full border border-borderUi-subtle object-cover" />
+            <div>
+              <div class="font-semibold text-txt-primary">{{ entry.user.effective_name }}</div>
+              <div class="text-[10px] text-txt-muted mono">{{ entry.logged_at.strftime('%H:%M:%S UTC') }}</div>
+            </div>
+            {% if entry.source == 'script' %}
+            <span class="px-1.5 py-0.5 rounded bg-brand-cyan/15 text-brand-cyan text-[10px] font-mono border border-brand-cyan/30">Verified</span>
+            {% endif %}
+          </div>
+          <div class="text-right">
+            <span class="mono font-bold text-brand-gold">{{ entry.amount }} coins</span>
+            {% if entry.note %}
+            <div class="text-[10px] text-txt-muted truncate max-w-[140px]">{{ entry.note }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Feature Architecture Pillars -->
+    <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      
+      <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle hover:border-brand-gold/40 transition-all space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-brand-gold/10 text-brand-gold flex items-center justify-center text-lg">
+          📜
+        </div>
+        <h4 class="font-display font-bold text-base text-txt-primary">Immutable Ledger</h4>
+        <p class="text-xs text-txt-secondary leading-relaxed">
+          Every balance logged is an immutable chronological snapshot. Historical entries are never overwritten, preserving your complete eFootball financial arc.
+        </p>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle hover:border-brand-turf/40 transition-all space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-brand-turf/10 text-brand-turf flex items-center justify-center text-lg">
+          ⚡
+        </div>
+        <h4 class="font-display font-bold text-base text-txt-primary">Direct Script Link</h4>
+        <p class="text-xs text-txt-secondary leading-relaxed">
+          Extract balances from eFootball web companions via our Tampermonkey userscript with personal Bearer token auth, earning the verified green badge.
+        </p>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle hover:border-brand-cyan/40 transition-all space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-brand-cyan/10 text-brand-cyan flex items-center justify-center text-lg">
+          🛡️
+        </div>
+        <h4 class="font-display font-bold text-base text-txt-primary">Anti-Cheat Anomaly Engine</h4>
+        <p class="text-xs text-txt-secondary leading-relaxed">
+          Self-reported entries are audited by statistical Z-score algorithms. Unrealistic multi-million spikes are immediately quarantined from growth leaderboards.
+        </p>
+      </div>
+
+      <div class="glass-panel p-5 rounded-2xl border-borderUi-subtle hover:border-brand-gold/40 transition-all space-y-2">
+        <div class="w-10 h-10 rounded-xl bg-brand-gold/10 text-brand-gold flex items-center justify-center text-lg">
+          ⚔️
+        </div>
+        <h4 class="font-display font-bold text-base text-txt-primary">Head-to-Head Duels</h4>
+        <p class="text-xs text-txt-secondary leading-relaxed">
+          Compare your portfolio growth with any division opponent. Dual-axis ECharts line graphs and head-to-head consistency metrics.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+{% endblock %}

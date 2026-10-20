@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.effective_name }} — Player Vault Dossier{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Player Header Card -->
+  <div class="glass-panel p-6 sm:p-8 rounded-3xl border-borderUi-strong relative overflow-hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      
+      <div class="flex items-center gap-5">
+        <img src="{{ profile_user.avatar_url }}" alt="{{ profile_user.username }}" class="w-20 h-20 rounded-full border-2 border-brand-gold shadow-glow-gold object-cover flex-shrink-0" />
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-txt-primary">{{ profile_user.effective_name }}</h1>
+            <span class="text-xs px-2 py-0.5 rounded bg-pitch-elevated border border-borderUi-subtle mono text-txt-secondary">{{ profile_user.country }}</span>
+          </div>
+          <div class="text-xs text-txt-muted mono flex items-center gap-2 mt-1">
+            <span>@{{ profile_user.username }}</span>
+            {% if profile_user.efootball_id %}
+            <span>•</span>
+            <span class="text-brand-gold font-semibold">eF ID: {{ profile_user.efootball_id }}</span>
+            {% endif %}
+          </div>
+          {% if profile_user.bio %}
+          <p class="text-xs text-txt-secondary max-w-lg mt-2 leading-relaxed">{{ profile_user.bio }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Action Buttons: Follow / Duel -->
+      <div class="flex flex-wrap items-center gap-3">
+        {% if current_user.is_authenticated and current_user.id != profile_user.id %}
+        <form action="{{ url_for('user.toggle_follow', target_user_id=profile_user.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold transition-all {% if is_following %}bg-pitch-elevated text-txt-muted border border-borderUi-strong hover:text-brand-crimson{% else %}bg-brand-gold text-pitch-void shadow-glow-gold hover:opacity-95{% endif %}">
+            {% if is_following %}✓ In Watchlist (Unfollow){% else %}+ Follow / Rival{% endif %}
+          </button>
+        </form>
+        {% endif %}
+
+        <a href="{{ url_for('main.compare', u1=current_user.username if current_user.is_authenticated else '', u2=profile_user.username) }}" class="px-4 py-2 rounded-xl glass-panel glass-panel-hover text-txt-primary font-semibold text-xs transition-colors flex items-center gap-1.5">
+          <span>⚔️ Stat Duel</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Numerical Highlights Row -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 mt-6 border-t border-borderUi-subtle">
+      <div>
+        <div class="text-[11px] text-txt-muted uppercase font-semibold">Current Balance</div>
+        <div class="font-display font-extrabold text-2xl text-brand-gold mono mt-0.5">
+          {{ stats.current_balance }} <span class="text-xs text-txt-muted font-normal">coins</span>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] text-txt-muted uppercase font-semibold">Global Standing</div>
+        <div class="font-display font-extrabold text-2xl text-txt-primary mono mt-0.5">
+          {% if stats.rank %}#{{ stats.rank }}{% else %}Unranked{% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] text-txt-muted uppercase font-semibold">Growth Score</div>
+        <div class="font-display font-extrabold text-2xl text-brand-turf mono mt-0.5">
+          {{ stats.growth_score }}<span class="text-xs text-txt-muted">/100</span>
+        </div>
+      </div>
+      <div>
+        <div class="text-[11px] text-txt-muted uppercase font-semibold">Active Streak</div>
+        <div class="font-display font-extrabold text-2xl text-txt-primary mono mt-0.5">
+          {{ stats.streak_days }} days
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Trajectory Chart -->
+  <div class="glass-panel p-6 rounded-3xl border-borderUi-subtle space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-txt-primary">Vault Balance Progression</h2>
+      <span class="text-xs text-txt-muted mono">Public Record</span>
+    </div>
+    <div id="profile-history-chart" class="w-full h-72"></div>
+  </div>
+
+  <!-- Unlocked Badges Section -->
+  <div class="glass-panel p-6 rounded-3xl border-borderUi-subtle space-y-4">
+    <h2 class="font-display font-bold text-lg text-txt-primary">Earned Honors & Badges</h2>
+    {% if badges %}
+    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+      {% for ub in badges %}
+      <div class="p-3 rounded-2xl bg-pitch-elevated border border-borderUi-subtle text-center space-y-1">
+        <div class="w-10 h-10 mx-auto rounded-full bg-brand-gold/15 text-brand-gold flex items-center justify-center font-bold text-lg border border-brand-gold/30">
+          ★
+        </div>
+        <div class="font-bold text-xs text-txt-primary truncate">{{ ub.badge.title }}</div>
+        <div class="text-[10px] text-txt-muted uppercase mono">{{ ub.badge.tier }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-xs text-txt-muted">This player has not unlocked any public badges yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const historyData = {{ stats.history | tojson | safe }};
+    if (historyData && historyData.length > 0) {
+      const labels = historyData.map(h => h.logged_at);
+      const values = historyData.map(h => h.amount);
+      window.COINVAULT_CHARTS.renderUserHistoryChart('profile-history-chart', labels, values);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}500 — Terminal Engine Malfunction{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto my-20 text-center space-y-5 glass-panel p-8 rounded-3xl border-borderUi-strong">
+  <div class="font-display font-black text-6xl text-brand-crimson mono">500</div>
+  <div class="w-12 h-1 bg-brand-crimson mx-auto rounded-full"></div>
+  <h1 class="font-display font-bold text-2xl text-txt-primary">Engine Anomaly Encountered</h1>
+  <p class="text-xs text-txt-secondary leading-relaxed">
+    An unexpected server execution exception occurred while computing vault telemetry. The transaction has been rolled back and logged.
+  </p>
+  <div class="pt-2">
+    <a href="{{ url_for('main.index') }}" class="px-6 py-3 rounded-xl bg-pitch-elevated border border-borderUi-subtle text-txt-primary font-bold text-xs hover:border-brand-gold inline-block">
+      Return to Terminal Home
+    </a>
+  </div>
+</div>
+{% endblock %}

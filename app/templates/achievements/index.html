@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Badges & Division Milestones — COINVAULT{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div>
+      <div class="text-xs font-semibold text-brand-gold uppercase tracking-wider">Milestone Honors & Recognition</div>
+      <h1 class="font-display font-extrabold text-3xl text-txt-primary">Vault Achievements</h1>
+      <p class="text-xs text-txt-secondary mt-1">Unlock division honors through consistent tracking, accumulation thresholds, and verified script telemetry.</p>
+    </div>
+    
+    {% if current_user.is_authenticated %}
+    <div class="text-xs mono p-3 rounded-2xl glass-panel border-borderUi-strong text-txt-secondary">
+      Unlocked: <b class="text-brand-gold">{{ unlocked_slugs|length }}</b> / {{ badges|length }} Honors
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Badges Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    {% for b in badges %}
+    {% set is_unlocked = b.slug in unlocked_slugs %}
+    <div class="glass-panel p-6 rounded-3xl border transition-all duration-300 relative overflow-hidden flex flex-col justify-between
+      {% if is_unlocked %}
+        border-brand-gold/40 shadow-glow-gold bg-gradient-to-b from-brand-gold/10 to-transparent
+      {% else %}
+        border-borderUi-subtle opacity-70 hover:opacity-100
+      {% endif %}">
+      
+      <!-- Top Badge Icon & Tier -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold border
+            {% if is_unlocked %}
+              bg-brand-gold/20 text-brand-gold border-brand-gold/50 shadow-glow-gold
+            {% else %}
+              bg-pitch-elevated text-txt-muted border-borderUi-subtle
+            {% endif %}">
+            {% if b.tier == 'diamond' %}💎
+            {% elif b.tier == 'gold' %}👑
+            {% elif b.tier == 'silver' %}🛡️
+            {% else %}⚡{% endif %}
+          </div>
+          
+          <span class="mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border
+            {% if b.tier == 'diamond' %} bg-cyan-950 text-brand-cyan border-brand-cyan/40
+            {% elif b.tier == 'gold' %} bg-amber-950 text-brand-gold border-brand-gold/40
+            {% elif b.tier == 'silver' %} bg-slate-900 text-slate-300 border-slate-400/40
+            {% else %} bg-orange-950 text-orange-400 border-orange-500/40 {% endif %}">
+            {{ b.tier }}
+          </span>
+        </div>
+
+        <h3 class="font-display font-bold text-base text-txt-primary mb-1">{{ b.title }}</h3>
+        <p class="text-xs text-txt-secondary leading-relaxed mb-4">{{ b.description }}</p>
+      </div>
+
+      <!-- Unlock Status Footer -->
+      <div class="pt-3 border-t border-borderUi-subtle flex items-center justify-between text-[11px] mono">
+        {% if is_unlocked %}
+        <span class="text-brand-turf font-bold flex items-center gap-1">
+          <span>✓</span> UNLOCKED
+        </span>
+        <button onclick="window.triggerConfetti();" class="text-txt-muted hover:text-brand-gold transition-colors">
+          Celebrate 🎉
+        </button>
+        {% else %}
+        <span class="text-txt-muted">🔒 LOCKED</span>
+        <span class="text-[10px] text-txt-muted">{{ b.category }}</span>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

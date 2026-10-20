@@ -1,0 +1,239 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/Inter.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/Inter-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/Syne.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/static/fonts/Syne-ExtraBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/JetBrainsMono.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+}
+
+:root {
+  /* DARK THEME (DEFAULT: Esports Stadium Night / Pitch Void) */
+  --color-bg-void: #07090C;
+  --color-bg-deep: #0D1117;
+  --color-bg-card: rgba(19, 25, 34, 0.75);
+  --color-bg-card-hover: rgba(26, 34, 48, 0.9);
+  --color-bg-elevated: #1B2433;
+  --color-bg-modal: #0F141C;
+
+  --color-text-primary: #F3F4F6;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-inverted: #07090C;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+  --color-border-active: rgba(245, 196, 81, 0.45);
+
+  --color-gold-coin: #F5C451;
+  --color-gold-light: #FDE68A;
+  --color-gold-dark: #C9961E;
+  --color-gold-glow: rgba(245, 196, 81, 0.18);
+
+  --color-turf-green: #00F084;
+  --color-turf-glow: rgba(0, 240, 132, 0.2);
+
+  --color-crimson-loss: #FF3B56;
+  --color-crimson-glow: rgba(255, 59, 86, 0.2);
+
+  --color-script-cyan: #00D8F6;
+  --color-script-glow: rgba(0, 216, 246, 0.2);
+
+  --spotlight-color: rgba(245, 196, 81, 0.06);
+  --grid-line-color: rgba(255, 255, 255, 0.03);
+}
+
+html.light {
+  /* LIGHT THEME (TRUE LIGHT: Daylight Court & Polished Steel) */
+  --color-bg-void: #F8FAFC;
+  --color-bg-deep: #F1F5F9;
+  --color-bg-card: rgba(255, 255, 255, 0.85);
+  --color-bg-card-hover: rgba(255, 255, 255, 1);
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-modal: #FFFFFF;
+
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+  --color-text-inverted: #F8FAFC;
+
+  --color-border-subtle: rgba(15, 23, 42, 0.09);
+  --color-border-strong: rgba(15, 23, 42, 0.22);
+  --color-border-active: rgba(217, 130, 20, 0.55);
+
+  --color-gold-coin: #D98214;
+  --color-gold-light: #F59E0B;
+  --color-gold-dark: #9A5B00;
+  --color-gold-glow: rgba(217, 130, 20, 0.15);
+
+  --color-turf-green: #059669;
+  --color-turf-glow: rgba(5, 150, 105, 0.15);
+
+  --color-crimson-loss: #E11D48;
+  --color-crimson-glow: rgba(225, 29, 72, 0.15);
+
+  --color-script-cyan: #0284C7;
+  --color-script-glow: rgba(2, 132, 199, 0.15);
+
+  --spotlight-color: rgba(217, 130, 20, 0.04);
+  --grid-line-color: rgba(15, 23, 42, 0.04);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: var(--color-bg-void);
+    color: var(--color-text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Monospace tabular figures for numbers everywhere */
+  .tabular-nums {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+
+/* Background Pitch Grid */
+.bg-pitch-grid {
+  background-image: 
+    linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Frosted Glass Layers */
+.glass-panel {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.glass-panel-hover:hover {
+  background: var(--color-bg-card-hover);
+  border-color: var(--color-border-strong);
+}
+
+.glass-header {
+  background: rgba(7, 9, 12, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+html.light .glass-header {
+  background: rgba(248, 250, 252, 0.85);
+}
+
+/* Spotlight Cursor Follower */
+.mouse-spotlight {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9998;
+  background: radial-gradient(600px circle at var(--mouse-x, -500px) var(--mouse-y, -500px), var(--spotlight-color), transparent 80%);
+  transition: opacity 0.4s ease;
+}
+
+/* Metallic Gold Gradient Text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF0B8 0%, #F5C451 50%, #C9961E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html.light .text-gold-gradient {
+  background: linear-gradient(135deg, #B45309 0%, #D97706 60%, #92400E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Metallic Shimmer Edge */
+.gold-border-glow {
+  position: relative;
+}
+.gold-border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(245, 196, 81, 0.6), transparent 60%, rgba(0, 240, 132, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-coin);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

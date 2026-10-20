@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}404 — Tactical Route Not Found{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto my-20 text-center space-y-5 glass-panel p-8 rounded-3xl border-borderUi-strong">
+  <div class="font-display font-black text-6xl text-brand-gold mono">404</div>
+  <div class="w-12 h-1 bg-brand-gold mx-auto rounded-full"></div>
+  <h1 class="font-display font-bold text-2xl text-txt-primary">Tactical Formation Misaligned</h1>
+  <p class="text-xs text-txt-secondary leading-relaxed">
+    The coin vault, leaderboard query, or player dossier you were navigating toward does not exist in the platform registry.
+  </p>
+  <div class="pt-2">
+    <a href="{{ url_for('main.index') }}" class="px-6 py-3 rounded-xl bg-brand-gold text-pitch-void font-bold text-xs shadow-glow-gold hover:opacity-95 inline-block">
+      Return to Terminal Home
+    </a>
+  </div>
+</div>
+{% endblock %}

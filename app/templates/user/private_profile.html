@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Private Vault — COINVAULT{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto my-16 text-center space-y-4 glass-panel p-8 rounded-3xl border-borderUi-strong">
+  <div class="w-16 h-16 mx-auto rounded-full bg-pitch-elevated border border-borderUi-subtle flex items-center justify-center text-3xl">
+    🔒
+  </div>
+  <h1 class="font-display font-bold text-2xl text-txt-primary">Private Vault Ledger</h1>
+  <p class="text-xs text-txt-secondary leading-relaxed">
+    Player <b class="text-brand-gold">@{{ user.username }}</b> has configured their vault records to be hidden from public discovery and rankings.
+  </p>
+  <div class="pt-4">
+    <a href="{{ url_for('main.leaderboards') }}" class="px-5 py-2.5 rounded-xl bg-pitch-elevated hover:bg-pitch-card border border-borderUi-subtle text-xs font-semibold text-txt-primary transition-colors">
+      Return to Public Leaderboards
+    </a>
+  </div>
+</div>
+{% endblock %}

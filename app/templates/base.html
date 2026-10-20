@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ PLATFORM_NAME }}{% endblock %} — {{ PLATFORM_TAGLINE }}</title>
+  
+  <!-- Preload Local Fonts -->
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Syne.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/Inter.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/JetBrainsMono.woff2') }}" as="font" type="font/woff2" crossorigin>
+  
+  <!-- Compiled Tailwind CSS with Design Tokens -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <!-- Vendor Libraries (Bundled Locally) -->
+  <script src="{{ url_for('static', filename='vendor/lenis.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/gsap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/ScrollTrigger.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/echarts.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/confetti.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/socket.io.min.js') }}"></script>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-pitch-void text-txt-primary min-h-screen flex flex-col relative selection:bg-brand-gold selection:text-pitch-void">
+
+  <!-- Mouse Spotlight Glow -->
+  <div class="mouse-spotlight"></div>
+
+  <!-- Background Pitch Grid -->
+  <div class="fixed inset-0 bg-pitch-grid pointer-events-none opacity-40 z-0"></div>
+
+  <!-- Top Glass Navigation Bar -->
+  <header class="sticky top-0 z-50 glass-header px-4 lg:px-8 py-3.5 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand Identity -->
+      <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-gold to-brand-goldDark flex items-center justify-center shadow-glow-gold group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-5 h-5 text-pitch-void" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm0 4a3 3 0 110 6 3 3 0 010-6zm4 11H8v-1.5c0-1.33 2.67-2 4-2s4 .67 4 2V17z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-lg tracking-tight flex items-center gap-1.5">
+            <span class="text-txt-primary">COIN</span><span class="text-gold-gradient">VAULT</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-brand-turf animate-pulse shadow-glow-turf ml-1"></span>
+          </div>
+          <div class="text-[10px] text-txt-muted uppercase tracking-wider mono -mt-0.5">eFootball Reserve</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-medium">
+        <a href="{{ url_for('main.leaderboards') }}" class="px-3 py-1.5 rounded-lg text-txt-secondary hover:text-txt-primary hover:bg-pitch-elevated/50 transition-colors">
+          Leaderboards
+        </a>
+        <a href="{{ url_for('main.analytics') }}" class="px-3 py-1.5 rounded-lg text-txt-secondary hover:text-txt-primary hover:bg-pitch-elevated/50 transition-colors">
+          Market Analytics
+        </a>
+        <a href="{{ url_for('main.compare') }}" class="px-3 py-1.5 rounded-lg text-txt-secondary hover:text-txt-primary hover:bg-pitch-elevated/50 transition-colors">
+          Compare Duel
+        </a>
+        <a href="{{ url_for('main.achievements') }}" class="px-3 py-1.5 rounded-lg text-txt-secondary hover:text-txt-primary hover:bg-pitch-elevated/50 transition-colors">
+          Badges
+        </a>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="px-3 py-1.5 rounded-lg text-brand-gold bg-brand-gold/10 border border-brand-gold/20 hover:bg-brand-gold/20 transition-colors">
+          Admin Panel
+        </a>
+        {% endif %}
+      </nav>
+
+      <!-- Center-Right Action / Command Palette -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Cmd+K Trigger -->
+        <button onclick="window.COINVAULT.openCommandPalette();" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pitch-card border border-borderUi-subtle hover:border-borderUi-strong text-txt-muted hover:text-txt-secondary text-xs transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span>Jump to...</span>
+          <kbd class="mono text-[10px] px-1.5 py-0.5 rounded bg-pitch-elevated border border-borderUi-subtle text-txt-primary">Ctrl K</kbd>
+        </button>
+
+        <!-- Fast Log Balance Button -->
+        {% if current_user.is_authenticated %}
+        <button onclick="window.COINVAULT.openLogModal();" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-brand-gold to-brand-goldDark text-pitch-void font-bold text-xs shadow-glow-gold hover:opacity-95 active:scale-95 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>Log Balance</span>
+        </button>
+        {% endif %}
+
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-btn" aria-label="Toggle Theme" class="p-2 rounded-lg bg-pitch-card border border-borderUi-subtle hover:bg-pitch-elevated text-txt-secondary transition-colors">
+          <svg class="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </button>
+
+        <!-- Profile or Auth Links -->
+        {% if current_user.is_authenticated %}
+        <div class="relative group">
+          <a href="{{ url_for('user.dashboard') }}" class="flex items-center gap-2 p-1 rounded-lg hover:bg-pitch-elevated transition-colors">
+            <img src="{{ current_user.avatar_url }}" alt="{{ current_user.username }}" class="w-8 h-8 rounded-full border border-borderUi-strong object-cover" />
+            <div class="hidden lg:block text-left">
+              <div class="text-xs font-semibold text-txt-primary truncate max-w-[100px]">{{ current_user.effective_name }}</div>
+              <div class="text-[10px] text-brand-gold mono font-bold">{{ current_user.current_balance | format_number if current_user.current_balance is defined else current_user.current_balance }}</div>
+            </div>
+          </a>
+          <!-- Hover Dropdown Menu -->
+          <div class="absolute right-0 mt-1 w-48 rounded-xl glass-panel p-1.5 shadow-terminal hidden group-hover:block z-50">
+            <a href="{{ url_for('user.dashboard') }}" class="block px-3 py-2 text-xs font-medium text-txt-primary hover:bg-pitch-elevated rounded-lg">Dashboard</a>
+            <a href="{{ url_for('user.profile', username=current_user.username) }}" class="block px-3 py-2 text-xs font-medium text-txt-primary hover:bg-pitch-elevated rounded-lg">Public Profile</a>
+            <a href="{{ url_for('user.settings') }}" class="block px-3 py-2 text-xs font-medium text-txt-primary hover:bg-pitch-elevated rounded-lg">Settings & API Tokens</a>
+            <div class="h-px bg-borderUi-subtle my-1"></div>
+            <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 text-xs font-medium text-brand-crimson hover:bg-brand-crimson/10 rounded-lg">Logout</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="flex items-center gap-2">
+          <a href="{{ url_for('auth.login') }}" class="px-3 py-1.5 text-xs font-semibold text-txt-secondary hover:text-txt-primary transition-colors">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-pitch-elevated hover:bg-pitch-card border border-borderUi-strong text-brand-gold transition-colors">Join Vault</a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages / Toast Container -->
+  <div class="max-w-7xl mx-auto px-4 lg:px-8 mt-4 w-full z-40">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {% if category == 'token_generated' %}
+            <div class="p-4 rounded-xl bg-brand-gold/10 border-2 border-brand-gold text-txt-primary shadow-glow-gold mb-3">
+              <div class="font-bold text-sm text-brand-gold flex items-center gap-2">
+                <span>🔑</span> Personal Bearer API Token Generated (Copy Immediately)
+              </div>
+              <p class="text-xs text-txt-secondary mt-1">
+                This secret token will never be displayed again. Paste it into your Tampermonkey script settings:
+              </p>
+              <div class="mt-2 p-2.5 rounded-lg bg-pitch-void border border-borderUi-strong flex items-center justify-between">
+                <code class="mono text-xs text-brand-turf font-bold select-all break-all">{{ message.replace('__NEW_API_TOKEN__:', '') }}</code>
+                <button onclick="navigator.clipboard.writeText('{{ message.replace('__NEW_API_TOKEN__:', '') }}'); alert('Token copied to clipboard!');" class="ml-2 px-2.5 py-1 text-[11px] font-bold rounded bg-brand-gold text-pitch-void">Copy</button>
+              </div>
+            </div>
+          {% else %}
+            <div class="px-4 py-3 rounded-xl border text-xs font-medium mb-3 flex items-center justify-between
+              {% if category == 'danger' %} bg-brand-crimson/15 border-brand-crimson/40 text-brand-crimson
+              {% elif category == 'success' %} bg-brand-turf/15 border-brand-turf/40 text-brand-turf
+              {% elif category == 'warning' %} bg-brand-gold/15 border-brand-gold/40 text-brand-gold
+              {% else %} bg-pitch-elevated border-borderUi-strong text-txt-primary {% endif %}">
+              <span>{{ message }}</span>
+              <button onclick="this.parentElement.remove()" class="opacity-60 hover:opacity-100 font-bold ml-2">✕</button>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main View Area -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-8 py-6 z-10 relative">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-header px-4 py-2.5 flex items-center justify-around border-t border-borderUi-subtle">
+    <a href="{{ url_for('main.leaderboards') }}" class="flex flex-col items-center text-[10px] text-txt-secondary hover:text-brand-gold">
+      <span class="text-base">🏆</span>
+      <span>Ranks</span>
+    </a>
+    <a href="{{ url_for('main.analytics') }}" class="flex flex-col items-center text-[10px] text-txt-secondary hover:text-brand-gold">
+      <span class="text-base">📊</span>
+      <span>Analytics</span>
+    </a>
+    {% if current_user.is_authenticated %}
+    <button onclick="window.COINVAULT.openLogModal();" class="w-10 h-10 -mt-5 rounded-full bg-brand-gold text-pitch-void flex items-center justify-center font-bold text-lg shadow-glow-gold">
+      +
+    </button>
+    <a href="{{ url_for('user.dashboard') }}" class="flex flex-col items-center text-[10px] text-txt-secondary hover:text-brand-gold">
+      <span class="text-base">⚡</span>
+      <span>Vault</span>
+    </a>
+    <a href="{{ url_for('user.settings') }}" class="flex flex-col items-center text-[10px] text-txt-secondary hover:text-brand-gold">
+      <span class="text-base">⚙️</span>
+      <span>Settings</span>
+    </a>
+    {% else %}
+    <a href="{{ url_for('auth.login') }}" class="flex flex-col items-center text-[10px] text-txt-secondary hover:text-brand-gold">
+      <span class="text-base">🔑</span>
+      <span>Login</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <!-- Global Footer -->
+  <footer class="mt-auto border-t border-borderUi-subtle glass-panel py-8 px-4 lg:px-8 text-xs text-txt-muted z-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-display font-bold text-txt-primary">COINVAULT</span>
+        <span>•</span>
+        <span>eFootball Coin Reserve & High-Frequency Leaderboards</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-brand-turf/10 text-brand-turf text-[11px] mono border border-brand-turf/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-turf"></span>
+          Terminal Operational
+        </span>
+        <span>Built for eFootball competitive grinders</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================== -->
+  <!-- COMMAND PALETTE MODAL (Cmd+K) -->
+  <!-- ============================================================== -->
+  <div id="cmd-palette-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+    <div class="w-full max-w-xl glass-panel rounded-2xl border border-borderUi-strong shadow-terminal overflow-hidden" onclick="event.stopPropagation()">
+      <div class="p-3.5 border-b border-borderUi-subtle flex items-center gap-3">
+        <svg class="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="cmd-search-input" type="text" placeholder="Type a command or search players..." class="w-full bg-transparent text-sm text-txt-primary placeholder-txt-muted focus:outline-none" autocomplete="off" />
+        <span class="text-[10px] text-txt-muted mono px-1.5 py-0.5 rounded bg-pitch-elevated">ESC</span>
+      </div>
+      <div id="cmd-results-list" class="max-h-80 overflow-y-auto p-2 space-y-1">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- FAST LOG BALANCE MODAL -->
+  <!-- ============================================================== -->
+  {% if current_user.is_authenticated %}
+  <div id="log-coin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+    <div class="w-full max-w-md glass-panel rounded-2xl border border-borderUi-strong shadow-terminal p-6 relative" onclick="event.stopPropagation()">
+      <button onclick="window.COINVAULT.closeLogModal()" class="absolute top-4 right-4 text-txt-muted hover:text-txt-primary text-sm font-bold">✕</button>
+      
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-brand-gold">⚡</span>
+        <h3 class="font-display font-bold text-lg text-txt-primary">Log Coin Balance</h3>
+      </div>
+      <p class="text-xs text-txt-secondary mb-4">Record your exact current eFootball coin balance. Every entry creates an immutable snapshot.</p>
+      
+      <form action="{{ url_for('user.log_coin') }}" method="POST" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <div>
+          <label class="block text-xs font-semibold text-txt-muted uppercase tracking-wider mb-1">Current Balance</label>
+          <div class="relative">
+            <input id="coin-amount-input" type="number" name="amount" min="0" max="20000000" required placeholder="e.g. 14850" class="w-full bg-pitch-elevated border border-borderUi-strong rounded-xl px-4 py-3 text-lg font-bold mono text-brand-gold placeholder-txt-muted focus:outline-none focus:border-brand-gold" />
+            <span class="absolute right-4 top-3.5 text-xs text-txt-muted mono font-semibold">COINS</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-txt-muted uppercase tracking-wider mb-1">Snapshot Note (Optional)</label>
+          <input type="text" name="note" maxlength="200" placeholder="e.g. Match Pass unlocked, Spanish League Tour bonus" class="w-full bg-pitch-elevated border border-borderUi-subtle rounded-xl px-4 py-2.5 text-xs text-txt-primary placeholder-txt-muted focus:outline-none focus:border-brand-gold" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-txt-muted uppercase tracking-wider mb-1">Timestamp (Optional Backdate)</label>
+          <input type="datetime-local" name="logged_at" class="w-full bg-pitch-elevated border border-borderUi-subtle rounded-xl px-4 py-2 text-xs text-txt-primary focus:outline-none focus:border-brand-gold" />
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-3">
+          <button type="button" onclick="window.COINVAULT.closeLogModal()" class="px-4 py-2 text-xs font-semibold text-txt-secondary hover:text-txt-primary">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-brand-goldDark text-pitch-void font-bold text-xs shadow-glow-gold hover:opacity-95">Commit to Vault</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Live Toast Notification Container -->
+  <div id="toast-notification-area" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Custom Core Scripts -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/motion.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/coin-hero.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
